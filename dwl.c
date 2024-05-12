@@ -3307,6 +3307,12 @@ main(int argc, char *argv[])
 	int c;
 	char *startup_cmd = NULL, *runtimedir = NULL, *exp = NULL;
 
+	char *home_dir = getenv("HOME");
+	char *rel_path = "/.config/dwl-guile/config.scm";
+	config_file = malloc(strlen(home_dir) + strlen(rel_path) + 1);
+	strcpy(config_file, home_dir);
+	strcat(config_file, rel_path);
+
 	while ((c = getopt(argc, argv, "s:c:e:hv")) != -1) {
 		if (c == 's')
 			startup_cmd = optarg;
