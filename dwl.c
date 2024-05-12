@@ -3301,17 +3301,34 @@ dscm_bind(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	dscm_sendevents();
 }
 
+static char *
+get_config_path(void)
+{
+	const char *home = getenv("HOME");
+	const char *config_home = getenv("XDG_CONFIG_HOME");
+	const char *config_rel = "/.config/dwl-guile/config.scm";
+	char *config = NULL;
+
+    if ((config_home == NULL || config_home[0] == '\0') && home != NULL)
+	{
+		size_t size_fallback = strlen(home) + strlen(config_rel) + 1;
+		config = calloc(size_fallback, sizeof(char));
+
+		if (config != NULL)
+		{
+			strcpy(config, home);
+			strcat(config, config_rel);
+		}
+    }
+
+	return config;
+}
+
 int
 main(int argc, char *argv[])
 {
 	int c;
 	char *startup_cmd = NULL, *runtimedir = NULL, *exp = NULL;
-
-	char *home_dir = getenv("HOME");
-	char *rel_path = "/.config/dwl-guile/config.scm";
-	config_file = malloc(strlen(home_dir) + strlen(rel_path) + 1);
-	strcpy(config_file, home_dir);
-	strcat(config_file, rel_path);
 
 	while ((c = getopt(argc, argv, "s:c:e:hv")) != -1) {
 		if (c == 's')
@@ -3331,7 +3348,7 @@ main(int argc, char *argv[])
 	if (!(runtimedir = getenv("XDG_RUNTIME_DIR")))
 		die("XDG_RUNTIME_DIR must be set");
 	if (!config_file)
-		die("error: config path must be set using '-c'");
+		config_file = get_config_path();
 	scm_init_guile();
 	dscm_register();
 	dscm_hooks_initialize();
